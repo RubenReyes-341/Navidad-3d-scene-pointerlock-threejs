@@ -1,0 +1,583 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+    <title>Examen de PointLocker Navideño</title>
+    <style>
+          body {
+              margin: 0;
+              overflow: hidden;
+              user-select: none;
+          }
+          #boton {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 40px;
+            cursor: pointer;
+            background: rgba(0,0,0,0.6);
+            color: white; 
+            z-index: 10;
+          }
+          #activ {
+            color: rgba(9, 245, 9, 0.87);
+          }
+     </style>
+</head>
+<body>
+    
+    <div id="boton">
+        Para comenzar da clic en + para activar <p id="activ">( + )</p>Mira alrededor usando el mouse, pulsa Esc para parar
+    </div>
+
+<canvas id="myCanvas"></canvas>
+
+<script src="./fonts/FUENTE2.js"></script>
+
+<script type="importmap"> 
+    {
+        "imports":{
+            "three": "./js/three.module.js",
+            "three/PointerLockControls": "./js/PointerLockControls.js",
+            "three/interactive": "./js/three.interactive.js"
+        }
+}
+</script>
+<script type="module"> 
+    import * as THREE from 'three'; 
+    import { InteractionManager } from 'three/interactive';
+    import { TWEEN } from './js/tween.module.min.js';
+    import { PointerLockControls } from 'three/PointerLockControls'; 
+    import {TextGeometry} from "./js/TextGeometry.js";
+    import {FontLoader} from "./js/FontLoader.js";
+    import REGALO from "./assets/Regalo1.js";
+    import REGALOAZUL from "./assets/RegaloAzul.js";
+    import REGALOVERDE from "./assets/RegaloVerde.js";
+    import ESFERA from "./assets/Esfera1.js";
+    import MUÑECO from "./assets/MuñecoNieve1.js";
+    import GORRO from "./assets/GorroSanta1.js";
+    import TREN from "./assets/tren.js";
+    import CASA from "./assets/CasaGengibre.js";
+    import CHIMENEA from "./assets/Chimenea.js";
+    import ARBOL from "./assets/Arbol.js";
+    import ARBOLNORMAL from "./assets/ArbolSE.js";
+    import MONTAÑA from "./assets/fondoRegalo.js";
+    import ESTACION from "./assets/fondoRegaloTren.js";
+    import ESTACION2 from "./assets/fondoRegaloTren2.js";
+    import NIEVE from "./assets/fondoRegaloSuelo.js";
+    import RIELES from "./assets/Suelotren.js";
+    import SILLON from "./assets/Sillon.js";
+    import MESA from "./assets/Mesa.js";
+    import OSI from "./assets/OSO.js";
+    import MESASOLA from "./assets/MesaSola.js";
+    import TAPETEENORME from "./assets/Tapetote.js";
+    
+    var renderer = new THREE.WebGLRenderer({
+        canvas: document.getElementById('myCanvas'), 
+        antialias: true,
+    });
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x70707C);
+
+    var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 4000);
+    camera.position.set(210, 350, 1200);
+
+    var scene = new THREE.Scene();
+    var controls = new PointerLockControls( camera, renderer.domElement );
+    scene.add( controls.getObject() );
+    var boton = document.getElementById( 'boton' );
+    document.getElementById('activ').onclick = () => {
+        controls.lock();
+    };
+    controls.addEventListener( 'lock', function () {
+        boton.style.display = 'none';
+    } );
+    controls.addEventListener( 'unlock', function () {
+        boton.style.display = 'flex';
+    } );
+
+    //CRUZ DE MIRA
+    var geometryx = new THREE.BoxGeometry(0.0075, 0.05, 0.075);
+    var materialx = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide });
+    var meshx = new THREE.Mesh(geometryx, materialx);
+    meshx.position.set(0, 0, -1); 
+    var geometryx2 = new THREE.BoxGeometry(0.05, 0.0075, 0.075);
+    var meshx2 = new THREE.Mesh(geometryx2, materialx);
+    meshx2.position.set(0, 0, -1); 
+    camera.add(meshx,meshx2);
+
+    var interactionManager = new InteractionManager(
+        renderer,
+        camera,
+        renderer.domElement);
+    const sizes = { width: window.innerWidth, height: window.innerHeight };
+
+    //LUCES
+    var LuzAmbiente = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(LuzAmbiente);
+
+    var luzInterior = new THREE.PointLight(0xffeebb, 0.4, 120);
+    luzInterior.position.set(0, 40, 0);
+    luzInterior.castShadow = true; 
+    luzInterior.shadow.mapSize.width = 2048; 
+    luzInterior.shadow.mapSize.height = 2048;
+    luzInterior.shadow.bias = -0.001; 
+    scene.add(luzInterior);
+
+    var luzSol = new THREE.DirectionalLight(0xffffff, 0.2); 
+    luzSol.position.set(0, 270, 50); 
+    luzSol.castShadow = true; 
+    luzSol.shadow.camera.left = -200;
+    luzSol.shadow.camera.right = 200;
+    luzSol.shadow.camera.top = 200;
+    luzSol.shadow.camera.bottom = -250;
+    luzSol.shadow.mapSize.width = 4096; 
+    luzSol.shadow.mapSize.height = 4096;
+    luzSol.shadow.bias = -0.0005;
+    scene.add(luzSol);
+    
+    var loarder=new THREE.TextureLoader();
+    var bgTexture=loarder.load('./assets/madera.jpg');
+    scene.background=bgTexture;
+
+    //OBJETOS
+    const Casita=CASA({x:0,y:0,z:0});
+    scene.add(Casita);
+    Casita.castShadow = true;
+    Casita.receiveShadow = true;
+
+    const Chimeneita=CHIMENEA({x:0,y:0,z:-82});
+    scene.add(Chimeneita);
+    Chimeneita.castShadow = true;
+    Chimeneita.receiveShadow = true;
+    Chimeneita.scale.set(4,4,4);
+
+    const Arbolito=ARBOL({x:-30,y:-15,z:-25});
+    scene.add(Arbolito);
+    Arbolito.scale.set(9,9,9);
+
+    const Arbol1=ARBOLNORMAL({x:-100,y:-35,z:0});
+    scene.add(Arbol1);
+    Arbol1.scale.set(17,17,17);
+
+    const Arbol2=ARBOLNORMAL({x:100,y:-35,z:0});
+    scene.add(Arbol2);
+    Arbol2.scale.set(17,17,17);
+
+    const Arbol3=ARBOLNORMAL({x:85,y:-45,z:150});
+    scene.add(Arbol3);
+    Arbol3.scale.set(25,25,25);
+
+    const Arbol4=ARBOLNORMAL({x:-85,y:-45,z:150});
+    scene.add(Arbol4);
+    Arbol4.scale.set(25,25,25);
+
+    const FondoTrasero=MONTAÑA({x:0,y:149,z:-67});
+    scene.add(FondoTrasero);
+    FondoTrasero.scale.set(6,6,6);
+
+    const FondoDelantero=MONTAÑA({x:0,y:149,z:228});
+    scene.add(FondoDelantero);
+    FondoDelantero.scale.set(6,6,6);
+
+    const FondoDerecha=MONTAÑA({x:147,y:149,z:80});
+    scene.add(FondoDerecha);
+    FondoDerecha.scale.set(6,6,6);
+    FondoDerecha.rotation.y=1.57;
+
+    const FondoIzquierda=MONTAÑA({x:-147,y:149,z:80});
+    scene.add(FondoIzquierda);
+    FondoIzquierda.scale.set(6,6,6);
+    FondoIzquierda.rotation.y=1.57;
+
+    const FondoSuelo=NIEVE({x:0,y:0,z:80});
+    scene.add(FondoSuelo);
+    FondoSuelo.scale.set(6,6,6);
+    FondoSuelo.rotation.x=1.57;
+
+    const Regalito=REGALO({x:0,y:149,z:80});
+    scene.add(Regalito);
+    Regalito.scale.set(6,6,6);
+
+    const Silloncito=SILLON({x:9,y:-12,z:-100});
+    scene.add(Silloncito);
+    Silloncito.scale.set(4,4,4);
+    Silloncito.rotation.y=-1;
+
+    const Mesita=MESA({x:70,y:-3,z:-30});
+    scene.add(Mesita);
+    Mesita.scale.set(4,4,4);
+    Mesita.rotation.y=-1.57;
+
+    const Regalito1=REGALO({x:-16,y:2.5,z:-2});
+    scene.add(Regalito1);
+    Regalito1.scale.set(.1,.1,.1);
+
+    const Regalito2=REGALOAZUL({x:-10,y:2.5,z:-8});
+    scene.add(Regalito2);
+    Regalito2.scale.set(.1,.1,.1);
+
+    const Regalito3=REGALOVERDE({x:-25,y:2.5,z:0});
+    scene.add(Regalito3);
+    Regalito3.scale.set(.1,.1,.1);
+
+    const Regalito4=REGALOAZUL({x:-40,y:7,z:40});
+    scene.add(Regalito4);
+    Regalito4.scale.set(.2,.3,.2);
+
+    const Regalito5=REGALO({x:-36,y:5,z:4});
+    scene.add(Regalito5);
+    Regalito5.scale.set(.2,.2,.2);
+
+    const Regalito6=REGALOVERDE({x:-3,y:3.2,z:-28});
+    scene.add(Regalito6);
+    Regalito6.scale.set(.15,.15,.15);
+
+    const Regalito7=REGALOAZUL({x:-3,y:2.5,z:-15});
+    scene.add(Regalito7);
+    Regalito7.scale.set(.13,.13,.13);
+
+    const Osito1=OSI({x:100,y:-13,z:-20});
+    scene.add(Osito1);
+    Osito1.scale.set(4,4,4);
+    Osito1.rotation.y=-2;
+
+    const FondoTrasero21=ESTACION({x:450,y:149,z:-142});
+    scene.add(FondoTrasero21);
+    FondoTrasero21.scale.set(9,6,6);
+
+    const FondoDelantero21=ESTACION2({x:450,y:149,z:302});
+    scene.add(FondoDelantero21);
+    FondoDelantero21.scale.set(9,6,6);
+
+    const FondoDerecha22=ESTACION2({x:671,y:149,z:80});
+    scene.add(FondoDerecha22);
+    FondoDerecha22.scale.set(9,6,9);
+    FondoDerecha22.rotation.y=1.57;
+
+    const FondoIzquierda22=ESTACION2({x:228,y:149,z:80});
+    scene.add(FondoIzquierda22);
+    FondoIzquierda22.scale.set(9,6,9);
+    FondoIzquierda22.rotation.y=1.57;
+
+    const rielecito=RIELES({x:450,y:1,z:80});
+    scene.add(rielecito);
+    rielecito.scale.set(9,9,9);
+    rielecito.rotation.x=1.57;
+
+    const Regalito0=REGALO({x:450,y:149,z:80});
+    scene.add(Regalito0);
+    Regalito0.scale.set(9,6,9);
+
+    const trenecito=TREN({x:380,y:7,z:-50});
+    scene.add(trenecito);
+    trenecito.castShadow = true;
+    trenecito.receiveShadow = true;
+    trenecito.scale.set(15,15,15);
+
+    // INTERACCIÓN TREN
+    interactionManager.add(trenecito);
+
+    trenecito.addEventListener('mouseover', (event) => {
+        event.target.scale.set(16, 16, 16);
+    });
+    trenecito.addEventListener('mouseout', (event) => {
+        event.target.scale.set(15, 15, 15);
+    });
+    trenecito.addEventListener('click', (event) => {
+         var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+         new TWEEN.Tween(coords) 
+          .to({x:450, y: 150, z: 150}, 2000) 
+          .onUpdate(() => camera.position.set(coords.x,coords.y,coords.z ))
+          .start();
+    });
+
+    const Arbolito2=ARBOL({x:285,y:-45,z:-90});
+    scene.add(Arbolito2);
+    Arbolito2.scale.set(25,25,25);
+
+    const Arbolito3=ARBOL({x:630,y:-45,z:242});
+    scene.add(Arbolito3);
+    Arbolito3.scale.set(25,25,25);
+
+    const pilaRegalos1 = new THREE.Group();
+    const Regalito8 = REGALO({x: 480, y: 13, z: 100});
+    Regalito8.scale.set(0.5, 0.5, 0.5);
+    pilaRegalos1.add(Regalito8);
+    const Regalito9 = REGALOVERDE({x: 454, y: 13, z: 100});
+    Regalito9.scale.set(0.5, 0.5, 0.5);
+    pilaRegalos1.add(Regalito9);
+    const Regalito10 = REGALOAZUL({x: 470, y: 33, z: 100});
+    Regalito10.scale.set(0.3, 0.3, 0.3);
+    pilaRegalos1.add(Regalito10);
+    scene.add(pilaRegalos1);
+
+    const pilaRegalos2 = pilaRegalos1.clone(); 
+    pilaRegalos2.position.set(-52, 0, 0); 
+    scene.add(pilaRegalos2);
+
+    const pilaRegalos3 = pilaRegalos1.clone();
+    pilaRegalos3.position.set(920, 0, 230); 
+    pilaRegalos3.rotation.y=3.14;
+    scene.add(pilaRegalos3);
+
+    const pilaRegalos4 = pilaRegalos1.clone();
+    pilaRegalos4.position.set(920, 0, 170); 
+    pilaRegalos4.rotation.y=3.14;
+    scene.add(pilaRegalos4);
+
+    const pilaRegalos5 = pilaRegalos1.clone();
+    pilaRegalos5.position.set(980, 0, 170); 
+    pilaRegalos5.rotation.y=3.14;
+    scene.add(pilaRegalos5);
+
+    const pilaRegalos6 = pilaRegalos1.clone();
+    pilaRegalos6.position.set(850, 0, 170); 
+    pilaRegalos6.rotation.y=3.14;
+    scene.add(pilaRegalos6);
+
+    const pilaRegalos7 = pilaRegalos1.clone();
+    pilaRegalos7.position.set(850, 0, 250); 
+    pilaRegalos7.rotation.y=3.14;
+    scene.add(pilaRegalos7);
+
+    const pilaRegalos8 = pilaRegalos1.clone();
+    pilaRegalos8.position.set(980, 0, 250); 
+    pilaRegalos8.rotation.y=3.14;
+    scene.add(pilaRegalos8);
+
+    const Osito2=OSI({x:85,y:-34,z:-50});
+    scene.add(Osito2);
+    Osito2.scale.set(18,18,18);
+
+    const MesaEnorme=MESASOLA({x:-1750,y:-630,z:-1700});
+    scene.add(MesaEnorme);
+    MesaEnorme.scale.set(200,200,200);
+
+    //INTERACCIÓN MUÑECOS DE NIEVE
+
+    //MUÑECO 1
+    const Muñequito1=MUÑECO({x:0,y:400,z:0});
+    scene.add(Muñequito1);
+    Muñequito1.scale.set(50,50,50);
+
+    interactionManager.add(Muñequito1); 
+    
+    Muñequito1.addEventListener('mouseover', (event) => {
+         event.target.scale.set(55, 55, 55); 
+    });
+
+    Muñequito1.addEventListener('mouseout', (event) => {
+         event.target.scale.set(50, 50, 50);
+    });
+
+    //VIAJAR A CASA
+    Muñequito1.addEventListener('click', (event) => {
+         var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+         new TWEEN.Tween(coords) 
+          .to({x:0, y: 60, z: 210}, 2000)
+          .onUpdate(() => camera.position.set(coords.x,coords.y,coords.z ))
+          .start();
+    });
+
+    // MUÑECO 3 
+    const Muñequito3=MUÑECO({x:0,y:150,z:-50});
+    scene.add(Muñequito3);
+    Muñequito3.scale.set(15,15,15);
+
+    interactionManager.add(Muñequito3); 
+    
+    Muñequito3.addEventListener('mouseover', (event) => {
+         event.target.scale.set(20, 20, 20); 
+    });
+
+    Muñequito3.addEventListener('mouseout', (event) => {
+         event.target.scale.set(15, 15, 15);
+    });
+
+    //VOLVER AL INICIO
+    Muñequito3.addEventListener('click', (event) => {
+         var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+         new TWEEN.Tween(coords) 
+          .to({x:210, y: 350, z: 1200}, 2000)
+          .onUpdate(() => camera.position.set(coords.x,coords.y,coords.z ))
+          .start();
+    });
+
+    // MUÑECO 5
+    const Muñequito5=MUÑECO({x:-25,y:5,z:100}); 
+    scene.add(Muñequito5);
+    Muñequito5.scale.set(5,5,5);
+    interactionManager.add(Muñequito5); 
+    Muñequito5.addEventListener('mouseover', (event) => {
+         event.target.scale.set(8, 8, 8); 
+    });
+    Muñequito5.addEventListener('mouseout', (event) => {
+         event.target.scale.set(5, 5, 5); 
+    });
+    //IR ADENTRO
+    Muñequito5.addEventListener('click', (event) => {
+         var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+         new TWEEN.Tween(coords) 
+          .to({x:0, y: 20, z: 50}, 2000)
+          .onUpdate(() => camera.position.set(coords.x,coords.y,coords.z ))
+          .start();
+    });
+
+    //MUÑECO 6
+    const Muñequito6=MUÑECO({x:0,y:5,z:180});
+    scene.add(Muñequito6);
+    Muñequito6.scale.set(5,5,5);
+    Muñequito6.rotation.y = 3.14;
+    interactionManager.add(Muñequito6); 
+    Muñequito6.addEventListener('mouseover', (event) => {
+         event.target.scale.set(8, 8, 8);
+    });
+    Muñequito6.addEventListener('mouseout', (event) => {
+         event.target.scale.set(5, 5, 5); 
+    });
+
+    //IR AL FRENTE
+    Muñequito6.addEventListener('click', (event) => {
+         var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+         new TWEEN.Tween(coords) 
+          .to({x:0, y: 60, z: 210}, 2000)
+          .onUpdate(() => camera.position.set(coords.x,coords.y,coords.z ))
+          .start();
+    });
+
+    //MUÑECO 2
+    const Muñequito2=MUÑECO({x:450,y:400,z:0});
+    scene.add(Muñequito2);
+    Muñequito2.scale.set(50,50,50);
+    interactionManager.add(Muñequito2);
+    Muñequito2.addEventListener('mouseover', (event) => {
+         event.target.scale.set(55, 55, 55);
+    });
+    Muñequito2.addEventListener('mouseout', (event) => {
+         event.target.scale.set(50, 50, 50);
+    });
+    //IR AL TREN
+    Muñequito2.addEventListener('click', (event) => {
+         var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+         new TWEEN.Tween(coords) 
+          .to({x:450, y: 100, z: 280}, 2000) 
+          .onUpdate(() => camera.position.set(coords.x,coords.y,coords.z ))
+          .start();
+    });
+
+    //MUÑECO 4
+    const Muñequito4=MUÑECO({x:450,y:150,z:-50});
+    scene.add(Muñequito4);
+    Muñequito4.scale.set(15,15,15);
+    interactionManager.add(Muñequito4); 
+    Muñequito4.addEventListener('mouseover', (event) => {
+         event.target.scale.set(20, 20, 20);
+    });
+    Muñequito4.addEventListener('mouseout', (event) => {
+         event.target.scale.set(15, 15, 15);
+    });
+    //VOLVER AL INICIO
+    Muñequito4.addEventListener('click', (event) => {
+         var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+         new TWEEN.Tween(coords) 
+          .to({x:210, y: 350, z: 1200}, 2000)
+          .onUpdate(() => camera.position.set(coords.x,coords.y,coords.z ))
+          .start();
+    });
+    const Tapetotito=TAPETEENORME({x:301,y:-600,z:0});
+    scene.add(Tapetotito);
+    Tapetotito.scale.set(20,20,20);
+    Tapetotito.rotation.y=1.57;
+    //TEXTOS
+    var loader=new FontLoader();
+    var font=loader.parse(fontJSON);
+    var geometry1=new TextGeometry('Feliz Navidad',{
+        font:font,
+        size:250,
+        height:10,
+    });
+    geometry1.center();
+    var material1=new THREE.MeshLambertMaterial({
+        color:0xFFFFFF,
+        emissive:0xB1FCCF,
+        shading:THREE.FlatShading,
+    });
+    var material2=new THREE.MeshLambertMaterial({
+        color:0x000000,
+        emissive:0x000000,
+        shading:THREE.FlatShading,
+    });
+    var texto=new THREE.Mesh(geometry1,material1);
+    texto.position.set(250,800,5);
+    texto.castShadow=true;
+    scene.add(texto);
+    texto.castShadow = true;
+    texto.receiveShadow = true;
+
+    //TEXTO 2
+    var geometry2=new TextGeometry('Escoge Un Muñeco',{
+        font:font,
+        size:100,
+        height:0,
+    });
+    geometry2.center();
+
+    var texto2=new THREE.Mesh(geometry2,material1);
+    texto2.position.set(250,-50,330);
+    texto2.castShadow=true;
+    scene.add(texto2);
+    texto2.castShadow = true;
+    texto2.receiveShadow = true;
+
+    //TEXTO 3
+    var geometry3=new TextGeometry('Pulsa para volver',{
+        font:font,
+        size:30,
+        height:0,
+    });
+    geometry3.center();
+
+    var texto3=new THREE.Mesh(geometry3,material2);
+    texto3.position.set(0,240,-60);
+    texto3.castShadow=true;
+    scene.add(texto3);
+    texto3.castShadow = true;
+    texto3.receiveShadow = true;
+
+    //TEXTO 4
+    var geometry4=new TextGeometry('Pulsa para volver',{
+        font:font,
+        size:30,
+        height:0,
+    });
+    geometry4.center();
+    var texto4=new THREE.Mesh(geometry4,material2);
+    texto4.position.set(450,270,-100);
+    texto4.castShadow=true;
+    scene.add(texto4);
+    texto4.castShadow = true;
+    texto4.receiveShadow = true;
+
+    requestAnimationFrame(render);
+    function render() {
+        TWEEN.update(); 
+        interactionManager.update(); 
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+    }
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+</script>
+</body>
+</html>
